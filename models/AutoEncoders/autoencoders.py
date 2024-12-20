@@ -106,12 +106,7 @@ class MLP:
 
 class AutoEncoder:
     def __init__(self, input_size, hidden_layers, latent_size, activation='relu', optimizer='sgd', learning_rate=0.01, batch_size=32, epochs=100):
-        """
-        AutoEncoder: Encoder + Decoder.
-        - input_size: The size of the input layer.
-        - hidden_layers: List of sizes for encoder hidden layers.
-        - latent_size: Size of the latent (compressed) space.
-        """
+        
         # Define encoder structure: input_size -> hidden_layers -> latent_size
         encoder_layers = [input_size] + hidden_layers + [latent_size]
         self.encoder = MLP(encoder_layers, activation, learning_rate, optimizer, batch_size, epochs)
@@ -121,41 +116,31 @@ class AutoEncoder:
         self.decoder = MLP(decoder_layers, activation, learning_rate, optimizer, batch_size, epochs)
 
     def fit(self, X):
-        """
-        Train the AutoEncoder.
-        """
+        
         X = np.array(X, dtype=float)
         assert X.ndim == 2, "Input X must be a 2D array (batch_size, input_size)."
 
         for epoch in range(self.encoder.epochs):
-            # Forward pass: Encode input into latent space
             encoded = self.encoder.predict(X)  # Shape: (batch_size, latent_size)
 
-            # Forward pass: Decode latent space back to input space
             decoded = self.decoder.predict(encoded)  # Shape: (batch_size, input_size)
 
-            # Ensure decoded shape matches input shape
             assert decoded.shape == X.shape, f"Shape mismatch: X.shape={X.shape}, decoded.shape={decoded.shape}"
 
             # Compute the loss (MSE)
             loss = np.mean((X - decoded) ** 2)
             print(f'Epoch {epoch + 1}, Loss: {loss}')
-
-            # Train both encoder and decoder
+\
             self.encoder.fit(X, encoded)  # Train encoder
             self.decoder.fit(encoded, X)  # Train decoder
 
     def get_latent(self, X):
-        """
-        Get the latent (compressed) representation.
-        """
+       
         X = np.array(X, dtype=float)
         return self.encoder.predict(X)
 
     def reconstruct(self, X):
-        """
-        Reconstruct the input from the latent space.
-        """
+        
         X = np.array(X, dtype=float)
         encoded = self.encoder.predict(X)
         return self.decoder.predict(encoded)
